@@ -21,7 +21,7 @@ public class PlayerAttack : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetMouseButton(0) && coolDownTimer > attackCooldown && !PauseMenu.GameIsPaused)
+        if (Input.GetAxis("FireMouse")!= 0 && coolDownTimer > attackCooldown && !PauseMenu.GameIsPaused)
         {
             if(playerMov.canAttack())
             Attack();

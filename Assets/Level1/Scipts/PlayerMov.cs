@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class PlayerMov : MonoBehaviour
 {
-
+    public Joystick joystick;
+    
     private Rigidbody2D body;
     private Animator anim;
     private BoxCollider2D boxCollider;
@@ -24,8 +25,11 @@ public class PlayerMov : MonoBehaviour
     [SerializeField] private float jumpspeed;
 
     private float horizontalInput;
+    private float horizontalJoystick;
+    private float verticalJoystick;
     private float wallJumpCouldown;
     private float gravity;
+    private bool moving;
 
     //string SavePath = "gamedata";
 
@@ -44,7 +48,7 @@ public class PlayerMov : MonoBehaviour
         checkpoint = body.position;
         gravityStart = body.gravityScale;
         reset = false;
-
+        moving = false;
         listCorazones = new List<CorazonVida>();
 
     }
@@ -66,26 +70,40 @@ public class PlayerMov : MonoBehaviour
             LoadPlayer();
         }else if (vida && !PauseMenu.GameIsPaused){
             horizontalInput = Input.GetAxis("Horizontal");
-
+            horizontalJoystick = joystick.Horizontal;
+            verticalJoystick = joystick.Vertical;
+            Debug.Log(horizontalInput);
+            if (horizontalInput != 0 || horizontalJoystick > .5f || horizontalJoystick < -0.5 || verticalJoystick > .5f || verticalJoystick < -.5) moving = true;
+            else moving = false;
 
             // orientacion Sprite
-            if (horizontalInput > 0.01f)
+            if (horizontalInput > 0.01f || horizontalJoystick > .5f)
                 transform.localScale = new Vector3(1, 1, 1);
-            else if (horizontalInput < -0.01f)
+            else if (horizontalInput < -0.01f || horizontalJoystick < -0.35f)
                 transform.localScale = new Vector3(-1, 1, 1);
-
+           
 
 
             //set variables de animacion
 
-            anim.SetBool("run", horizontalInput != 0);
+            anim.SetBool("run", (horizontalInput != 0 || horizontalJoystick != 0));
             anim.SetBool("Grounded", onGround());
+
+            float move = 0;
+            
+            if (horizontalInput > 0.01|| horizontalJoystick > .3f) move = 1;
+            else if (horizontalInput < -0.01 || horizontalJoystick < -0.3f) move = -1;
+            else move = 0;
+            body.velocity = new Vector2(move * movespeed, body.velocity.y);
+            
+            if (horizontalInput != 0)
+            {
+                body.velocity = new Vector2(horizontalInput * movespeed, body.velocity.y);
+            }
 
             if (wallJumpCouldown >= 0.2f)
             {
-
-
-                body.velocity = new Vector2(horizontalInput * movespeed, body.velocity.y);
+                
 
                 if (onWall() && !onGround())
                 {
@@ -98,7 +116,8 @@ public class PlayerMov : MonoBehaviour
                 else
                     body.gravityScale = gravity;
 
-                if (Input.GetKey(KeyCode.Space))
+                
+                if (Input.GetKey(KeyCode.Space) || verticalJoystick > .5f)
                 {
                     jump();
                 }
@@ -159,7 +178,7 @@ public class PlayerMov : MonoBehaviour
 
     public bool canAttack()
     {
-        return horizontalInput == 0 && onGround() && !onWall();
+        return !moving && onGround() && !onWall();
 
         
     }

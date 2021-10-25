@@ -72,7 +72,7 @@ public class PlayerMov : MonoBehaviour
             horizontalInput = Input.GetAxis("Horizontal");
             horizontalJoystick = joystick.Horizontal;
             verticalJoystick = joystick.Vertical;
-            Debug.Log(horizontalInput);
+           
             if (horizontalInput != 0 || horizontalJoystick > .5f || horizontalJoystick < -0.5 || verticalJoystick > .5f || verticalJoystick < -.5) moving = true;
             else moving = false;
 
@@ -89,26 +89,27 @@ public class PlayerMov : MonoBehaviour
             anim.SetBool("run", (horizontalInput != 0 || horizontalJoystick != 0));
             anim.SetBool("Grounded", onGround());
 
-            float move = 0;
+         
             
-            if (horizontalInput > 0.01|| horizontalJoystick > .3f) move = 1;
-            else if (horizontalInput < -0.01 || horizontalJoystick < -0.3f) move = -1;
-            else move = 0;
-            body.velocity = new Vector2(move * movespeed, body.velocity.y);
-            
-            if (horizontalInput != 0)
-            {
-                body.velocity = new Vector2(horizontalInput * movespeed, body.velocity.y);
-            }
 
             if (wallJumpCouldown >= 0.2f)
             {
-                
+                float move = 0;
+
+                if (horizontalInput > 0.01 || horizontalJoystick > .3f) move = 1;
+                else if (horizontalInput < -0.01 || horizontalJoystick < -0.3f) move = -1;
+                else move = 0;
+                body.velocity = new Vector2(move * movespeed, body.velocity.y);
+                if (horizontalInput != 0)
+                {
+                    body.velocity = new Vector2(horizontalInput * movespeed, body.velocity.y);
+                }
+
 
                 if (onWall() && !onGround())
                 {
 
-
+  
                     body.gravityScale = 0;
                     body.velocity = Vector2.zero;
 
@@ -117,7 +118,7 @@ public class PlayerMov : MonoBehaviour
                     body.gravityScale = gravity;
 
                 
-                if (Input.GetKey(KeyCode.Space) || verticalJoystick > .5f)
+                if (Input.GetKey(KeyCode.Space) || verticalJoystick >  0.5f)
                 {
                     jump();
                 }
@@ -137,19 +138,24 @@ public class PlayerMov : MonoBehaviour
 
         if (onGround())
         {
+            Debug.Log("suelo");
             body.velocity = new Vector2(body.velocity.x, jumpspeed);
             onGround();
             anim.SetTrigger("jump");
         }
         else if(onWall() && !onGround())
         {
-            if(horizontalInput == 0)
+            if(!moving)
             {
                 body.velocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 6, 0);
                 transform.localScale = new Vector3(transform.localScale.x * -1,transform.localScale.y, transform.localScale.z);
+                Debug.Log("Pared Quieto");
             }
             else
-                body.velocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 6, jumpspeed* 0.75f);
+            {
+                Debug.Log("paredMov"); body.velocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 6, jumpspeed * .7f);
+            }
+               
 
 
             wallJumpCouldown = 0;
